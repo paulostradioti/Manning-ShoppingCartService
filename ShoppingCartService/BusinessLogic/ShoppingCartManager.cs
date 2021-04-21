@@ -7,6 +7,7 @@ using ShoppingCartService.BusinessLogic.Validation;
 using ShoppingCartService.Controllers.Models;
 using ShoppingCartService.DataAccess;
 using ShoppingCartService.DataAccess.Entities;
+using ShoppingCartService.Models;
 
 namespace ShoppingCartService.BusinessLogic
 {

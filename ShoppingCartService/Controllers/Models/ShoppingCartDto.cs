@@ -5,7 +5,7 @@ using ShoppingCartService.Models;
 
 namespace ShoppingCartService.Controllers.Models
 {
-    public record ItemDto([Required] string ProductId, [Required] string ProductName, uint Price, uint Quantity = 1);
+    public record ItemDto([Required] string ProductId, [Required] string ProductName, double Price, uint Quantity = 1);
 
     public record CreateCartDto
     {

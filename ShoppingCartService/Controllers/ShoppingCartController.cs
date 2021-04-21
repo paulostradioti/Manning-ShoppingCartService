@@ -65,6 +65,12 @@ namespace ShoppingCartService.Controllers
 
                 return NotFound();
             }
+            catch (MissingDataException ex)
+            {
+                _logger.LogError($"Cannot calculate checkout price for {id}:\n", ex);
+
+                return NotFound();
+            }
         }
 
         /// <summary>
@@ -107,6 +113,12 @@ namespace ShoppingCartService.Controllers
 
                 return NotFound();
             }
+            catch (InvalidInputException ex)
+            {
+                _logger.LogError($"Failed to add item to shopping cart:\n{ex}");
+
+                return BadRequest();
+            }
         }
 
         /// <summary>
@@ -115,7 +127,7 @@ namespace ShoppingCartService.Controllers
         /// <param name="id">Shopping cart id</param>
         /// <param name="productId">The item's product id</param>
         [HttpDelete("{id:length(24)}/{productId:length(24)}")]
-        public IActionResult RemoveItemFromCart(string id, String productId)
+        public ActionResult<ShoppingCartDto> RemoveItemFromCart(string id, String productId)
         {
             try
             {

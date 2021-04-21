@@ -19,10 +19,10 @@ namespace ShoppingCartService.BusinessLogic
         private readonly Dictionary<ShippingMethod, double> _shippingIncreaseBasedOnShippingMethod =
             new()
             {
-                { ShippingMethod.Standard, 1.0 },
-                { ShippingMethod.Expedited, 1.2 },
-                { ShippingMethod.Priority, 2.0 },
-                { ShippingMethod.Express, 2.5 },
+                {ShippingMethod.Standard, 1.0},
+                {ShippingMethod.Expedited, 1.2},
+                {ShippingMethod.Priority, 2.0},
+                {ShippingMethod.Express, 2.5},
             };
 
         private readonly Address _warehouseAddress;
