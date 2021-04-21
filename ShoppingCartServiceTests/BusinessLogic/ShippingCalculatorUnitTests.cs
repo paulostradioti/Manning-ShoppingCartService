@@ -57,7 +57,6 @@ namespace ShoppingCartServiceTests.BusinessLogic
             };
         }
 
-        // This is an example test, check the previous milestone tests and try to write the missing tests using parameters and builders
         [Theory]
         [MemberData(nameof(DifferentAddressTypes))]
         public void CalculateShippingCost_NoItems_Return0(Address source, Address destination)
@@ -72,5 +71,145 @@ namespace ShoppingCartServiceTests.BusinessLogic
 
             Assert.Equal(0, result);
         }
+
+        [Theory]
+        [MemberData(nameof(AddressTypesWithRates))]
+        public void CalculateShippingCost_StandardShippingOneItemsQuantity1_Return1TimesRate(
+            Address source, Address destination, double rate)
+        {
+            var target = new ShippingCalculator(source);
+
+            var cart = new Cart
+            {
+                CustomerType = CustomerType.Standard,
+                ShippingMethod = ShippingMethod.Standard,
+                Items = new List<Item>
+                {
+                    new() {Quantity = 1}
+                },
+                ShippingAddress = destination
+            };
+
+            var result = target.CalculateShippingCost(cart);
+
+            Assert.Equal(1 * rate, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(AddressTypesWithRates))]
+        public void CalculateShippingCost_StandardShippingOneItemsQuantity5_return5TimesRate(
+            Address source, Address destination, double rate)
+        {
+            var target = new ShippingCalculator(source);
+
+            var cart = new Cart
+            {
+                CustomerType = CustomerType.Standard,
+                ShippingMethod = ShippingMethod.Standard,
+                Items = new List<Item>
+                {
+                    new() {Quantity = 5}
+                },
+                ShippingAddress = destination
+            };
+
+            var result = target.CalculateShippingCost(cart);
+
+            Assert.Equal(5 * rate, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(AddressTypesWithRates))]
+        public void CalculateShippingCost_StandardShippingTwoItems_ReturnSumOfItemsQuantityTimesRate(
+            Address source, Address destination, double rate)
+        {
+            var target = new ShippingCalculator(source);
+
+            var cart = new Cart
+            {
+                CustomerType = CustomerType.Standard,
+                ShippingMethod = ShippingMethod.Standard,
+                Items = new List<Item>
+                {
+                    new() {Quantity = 5},
+                    new() {Quantity = 3}
+                },
+                ShippingAddress = destination
+            };
+
+            var result = target.CalculateShippingCost(cart);
+
+            Assert.Equal(8 * rate, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(ShippingMethodsWithRates))]
+        public void CalculateShippingCost_SameCityShippingOneItemsQuantity1_Return1TimesShippingRate(
+            ShippingMethod shippingMethod, double shippigRate)
+        {
+            var address = CreateAddress();
+
+            var target = new ShippingCalculator(address);
+
+            var cart = new CartBuilder()
+                .WithShippingMethod(shippingMethod)
+                .WithShippingAddress(address)
+                .WithItems(new List<Item> {CreateItem(quantity: 1)})
+                .Build();
+
+            var result = target.CalculateShippingCost(cart);
+
+            Assert.Equal(1 * ShippingCalculator.SameCityRate * shippigRate, result);
+        }
+
+        [Theory]
+        [InlineData(ShippingMethod.Standard)]
+        [InlineData(ShippingMethod.Expedited)]
+        [InlineData(ShippingMethod.Priority)]
+        public void CalculateShippingCost_PremiumCustomer_ShippingRate1(ShippingMethod shippingMethod)
+        {
+            var address = CreateAddress(country: "country 1");
+
+            var target = new ShippingCalculator(address);
+
+            var cart = new Cart
+            {
+                CustomerType = CustomerType.Premium,
+                ShippingMethod = shippingMethod,
+                Items = new List<Item>
+                {
+                    CreateItem(quantity:  1)
+                },
+                ShippingAddress = CreateAddress(country: "country 2")
+            };
+
+            var result = target.CalculateShippingCost(cart);
+
+            Assert.Equal(1 * ShippingCalculator.InternationalShippingRate, result);
+        }
+
+        [Fact]
+        public void CalculateShippingCost_PremiumCustomerWithExpressShippingMethod_PayShippingRate()
+        {
+            var address = CreateAddress(country: "country 1");
+
+            var target = new ShippingCalculator(address);
+
+            var cart = new Cart
+            {
+                CustomerType = CustomerType.Premium,
+                ShippingMethod = ShippingMethod.Express,
+                Items = new List<Item>
+                {
+                    CreateItem(quantity:  1)
+                },
+                ShippingAddress = CreateAddress(country: "country 2")
+            };
+
+            var result = target.CalculateShippingCost(cart);
+
+            Assert.Equal(1 * ShippingCalculator.InternationalShippingRate * 2.5, result);
+        }
+
     }
 }

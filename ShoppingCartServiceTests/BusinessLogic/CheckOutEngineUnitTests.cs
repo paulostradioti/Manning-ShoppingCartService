@@ -6,6 +6,7 @@ using ShoppingCartService.Mapping;
 using ShoppingCartService.Models;
 using ShoppingCartServiceTests.Builders;
 using Xunit;
+
 using static ShoppingCartServiceTests.Builders.AddressBuilder;
 using static ShoppingCartServiceTests.Builders.ItemBuilder;
 
@@ -30,7 +31,19 @@ namespace ShoppingCartServiceTests.BusinessLogic
         [InlineData(CustomerType.Premium, 10)]
         public void CalculateTotals_DiscountBasedOnCustomerType(CustomerType customerType, double expectedDiscount)
         {
-            // use Builders and the parameters to write test
+            var address = CreateAddress();
+
+            var target = new CheckOutEngine(new ShippingCalculator(address), _mapper);
+
+            var cart = new CartBuilder()
+                .WithCustomerType(customerType)
+                .WithShippingAddress(address)
+                .Build();
+
+            var result = target.CalculateTotals(cart);
+            
+            
+            Assert.Equal(expectedDiscount, result.CustomerDiscount);
         }
 
 
@@ -41,32 +54,49 @@ namespace ShoppingCartServiceTests.BusinessLogic
         [InlineData(ShippingMethod.Priority)]
         public void CalculateTotals_StandardCustomer_TotalEqualsCostPlusShipping(ShippingMethod shippingMethod)
         {
-            // use Builders and the parameters to write test
-        }
-
-        [Fact]
-        public void CalculateTotals_MoreThanOneItem_TotalEqualsCostPlusShipping()
-        {
-            // use Builders and reduce arrange code
-
-            var originAddress = new Address { Country = "country", City = "city 1", Street = "street" };
-            var destinationAddress = new Address { Country = "country", City = "city 2", Street = "street" };
+            var originAddress = CreateAddress(city: "city 1");
+            var destinationAddress = CreateAddress(city: "city 2");
 
             var target = new CheckOutEngine(new ShippingCalculator(originAddress), _mapper);
-
-            var cart = new Cart
-            {
-                CustomerType = CustomerType.Standard,
-                Items = new() { new Item { ProductId = "prod-1", Price = 2, Quantity = 3 } },
-                ShippingAddress = destinationAddress
-            };
-
+            
+            var cart = new CartBuilder()
+                .WithShippingAddress(destinationAddress)
+                .WithShippingMethod(shippingMethod)
+                .WithItems(new List<Item>
+                {
+                    CreateItem(price: 2, quantity:3)
+                })
+                .Build();
+                
             var result = target.CalculateTotals(cart);
 
             Assert.Equal((2 * 3) + result.ShippingCost, result.Total);
         }
 
-        // This test was left as in the full solution for reference
+        [Fact]
+        public void CalculateTotals_MoreThanOneItem_TotalEqualsCostPlusShipping()
+        {
+            var originAddress = CreateAddress(city: "city 1");
+            var destinationAddress = CreateAddress(city: "city 2");
+
+            var target = new CheckOutEngine(new ShippingCalculator(originAddress), _mapper);
+
+            var cart = new CartBuilder()
+                .WithShippingAddress(destinationAddress)
+                .WithShippingMethod(ShippingMethod.Standard)
+                .WithItems(new List<Item>
+                {
+                    CreateItem(price: 2, quantity:3),
+                    CreateItem(price: 4, quantity:5)
+                })
+                .Build();
+
+
+            var result = target.CalculateTotals(cart);
+
+            Assert.Equal((2 * 3) + (4 * 5) + result.ShippingCost, result.Total);
+        }
+
         [Fact]
         public void CalculateTotals_PremiumCustomer_TotalEqualsCostPlusShippingMinusDiscount()
         {
@@ -80,7 +110,7 @@ namespace ShoppingCartServiceTests.BusinessLogic
                 .WithShippingAddress(destinationAddress)
                 .WithItems(new List<Item>
                 {
-                    CreateItem(price: 2, quantity: 3)
+                    CreateItem(price: 2, quantity:3)
                 })
                 .Build();
             var result = target.CalculateTotals(cart);

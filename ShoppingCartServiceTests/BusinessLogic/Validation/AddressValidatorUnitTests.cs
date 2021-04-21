@@ -9,16 +9,11 @@ namespace ShoppingCartServiceTests.BusinessLogic.Validation
 {
     public class AddressValidatorUnitTests
     {
-        // Fix these using AddressBuilder
         [Fact]
         public void IsValid_doesNotHaveCountry_returnFalse()
         {
-            var address = new Address
-            {
-                Country = null,
-                City = "city-1",
-                Street = "1234 street"
-            };
+            var address = CreateAddress(country: null);
+
 
             var target = new AddressValidator();
 
@@ -30,12 +25,7 @@ namespace ShoppingCartServiceTests.BusinessLogic.Validation
         [Fact]
         public void IsValid_doesNotHaveCity_returnFalse()
         {
-            var address = new Address
-            {
-                Country = "country-1",
-                City = null,
-                Street = "1234 street"
-            };
+            var address = CreateAddress(city: null);
 
             var target = new AddressValidator();
 
@@ -47,12 +37,7 @@ namespace ShoppingCartServiceTests.BusinessLogic.Validation
         [Fact]
         public void IsValid_doesNotHaveStreet_returnFalse()
         {
-            var address = new Address
-            {
-                Country = "country-1",
-                City = "city-1",
-                Street = null
-            };
+            var address = CreateAddress(street: null);
 
             var target = new AddressValidator();
 
@@ -64,12 +49,7 @@ namespace ShoppingCartServiceTests.BusinessLogic.Validation
         [Fact]
         public void IsValid_validValues_returnTrue()
         {
-            var address = new Address
-            {
-                Country = "country-1",
-                City = "city-1",
-                Street = "street-1"
-            };
+            var address = CreateAddress(country: "country-1", city: "city-1", street: "street");
 
             var target = new AddressValidator();
 
